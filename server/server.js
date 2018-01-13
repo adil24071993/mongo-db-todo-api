@@ -7,6 +7,7 @@ var {User} = require('./models/user');
 var {ObjectID} = require('mongodb');
 
 var app = express();
+var port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
@@ -34,19 +35,6 @@ app.get('/todos', (req, res)=>{
 
 app.get('/todos/:id', (req, res)=>{
   var id = req.params.id;
-  // if(ObjectID.isValid(id)){
-  //   Todo.findById(id).then((todo)=>{
-  //     res.send(todo)
-  //   }, (e)=>{
-  //     res.status(404).send({
-  //       "errorMessage": "Id not found"
-  //     })
-  //   });
-  // }else{
-  //   res.status(400).send({
-  //     "errorMessage": "Invalid Id"
-  //   });
-  // }
   if(!ObjectID.isValid(id)){
     return res.status(404).send()
   }
@@ -62,8 +50,8 @@ app.get('/todos/:id', (req, res)=>{
   });
 });
 
-app.listen(3000, ()=>{
-  console.log('Server started at 3000');
+app.listen(port, ()=>{
+  console.log('Server started at port ', port);
 });
 
 module.exports = {
