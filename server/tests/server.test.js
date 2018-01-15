@@ -3,15 +3,22 @@ var expect = require('expect');
 
 var {app} = require('./../server');
 var {Todo} = require('./../models/todo');
+var {User} = require('./../models/user');
 
 beforeEach((done)=>{
   Todo.remove({}).then(()=>{
-    done
+    console.log('Todo DB cleared');
+    User.remove({}).then(()=>{
+      console.log('Users DB cleared');
+      done();
+    });
+  }).catch((err)=>{
+    done(err);
   });
 });
 
 describe('POST /todos', () => {
-  if('should create a new todo', (done) => {
+  it('should create a new todo', (done) => {
     var text = 'Test string';
 
     request(app)
@@ -19,7 +26,7 @@ describe('POST /todos', () => {
       .send({text})
       .expect(200)
       .expect((res)=>{
-        expect(res.body.text.toBe(text));
+        expect(res.body.text).toBe(text);
       })
       .end((err, res)=>{
         if(err){
@@ -27,11 +34,38 @@ describe('POST /todos', () => {
         }
 
         Todo.find().then((todos)=>{
-          expect(todos.length.toBe(1));
-          expect(todos[0].text.toBe(text));
+          expect(todos.length).toBe(1);
+          expect(todos[0].text).toBe(text);
+          done();
         }).catch((e)=>{
           done(e);
         });
       });
     });
+});
+
+describe('POST /users', ()=>{
+  it('should create new user', (done)=>{
+    var email = 'dark@gmail.com';
+
+    request(app)
+      .post('/users')
+      .send({email})
+      .expect(200)
+      .expect((res)=>{
+        expect(res.body.email).toBe(email)
+      })
+      .end((err, res)=>{
+        if(err){
+          return done(err)
+        }
+        User.find().then((users)=>{
+          expect(users.length).toBe(1);
+          expect(users[0].email).toBe(email);
+          done();
+        }, (e)=>{
+          done(e);
+        });
+      });
+  });
 });

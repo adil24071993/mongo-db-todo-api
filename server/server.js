@@ -1,5 +1,6 @@
-var express = require('express');
-var bodyParser = require('body-parser');
+const _= require("lodash");
+const express = require('express');
+const bodyParser = require('body-parser');
 
 var {mongoose} = require('./db/mongoose.js');
 var {Todo} = require('./models/todo');
@@ -18,6 +19,18 @@ app.post('/todos',(req, res)=>{
 
   todo.save().then((doc)=>{
     res.send(doc);
+  },(error)=>{
+    res.status(400).send(error);
+  });
+});
+
+app.post('/users', (req, res)=>{
+  var user = new User({
+    "email": req.body.email
+  });
+
+  user.save().then((user)=>{
+    res.send(user);
   },(error)=>{
     res.status(400).send(error);
   });
@@ -70,6 +83,37 @@ app.delete('/todos/:id',(req, res)=>{
       "errorMessage" : "Not a valid ID"
     });
   });
+});
+app.patch('/todos/:id',(req, res) => {
+  var id = req.params.id;
+  var body = _.pick(req.body, ['text', 'completed']);
+
+  if(!ObjectID.isValid(id)){
+    return res.status(404).send({
+      "errorMessage" : "ID Not Valid"
+    });
+  }
+
+  if(_.isBoolean(body.completed) && body.completed){
+    body.completedAt = new Date().getTime();
+  }else{
+    body.completed = false;
+    body.completedAt = null;
+  }
+
+  Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+    if(!todo){
+      return res.status(404).send({
+        "errorMessage": "Todo not found"
+      });
+    }
+
+    res.status(200).send({todo});
+  }).catch((error) => {
+    return res.status(400).send({
+      "errorMessage" : "Error"
+    });
+  })
 });
 
 app.listen(port, ()=>{
