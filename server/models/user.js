@@ -1,3 +1,5 @@
+require('./../config/config');
+
 const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
@@ -46,7 +48,7 @@ UserSchema.methods.toJSON = function(){
 UserSchema.methods.generateAuthToken = function () {
   var user = this; //instance method is called over individual 'Document'
   var access = 'auth';
-  var token = jwt.sign({_id: user._id.toHexString(), access}, 'syedadil').toString();
+  var token = jwt.sign({_id: user._id.toHexString(), access}, process.env.JWT_SECRET).toString();
 
   user.tokens.push({access, token});
 
@@ -70,7 +72,7 @@ UserSchema.statics.findByToken = function (token) {
   var decoded;
 
   try{
-    decoded = jwt.verify(token, 'syedadil');
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
   } catch (e){
     // return new Promise(resolve, reject){
     //   reject();
